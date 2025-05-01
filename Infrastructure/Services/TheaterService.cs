@@ -142,4 +142,31 @@ public class TheaterService : ITheaterService
             return tickets;
         }
     }
+
+    public List<Theater> GetCountSeans()
+    {
+        using (var connection = new NpgsqlConnection(connectionString))
+        {
+            connection.Open();
+            var cmd = @$"select * from theaters
+                      where capacity > 5";
+            var command = new NpgsqlCommand(cmd, connection);
+            var reader = command.ExecuteReader();
+            var theaters = new List<Theater>();
+
+            while (reader.Read())
+            {
+                theaters.Add(new Theater
+                {
+                    Id = reader.GetInt32(0),
+                    name = reader.GetString(1),
+                    location = reader.GetString(2),
+                    manager = reader.GetString(3),
+                    phone = reader.GetString(4),
+                    capacity = reader.GetInt32(5)
+                });
+            }
+            return theaters;
+        }
+    }
 }

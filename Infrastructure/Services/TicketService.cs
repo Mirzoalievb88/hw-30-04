@@ -140,5 +140,42 @@ public class TicketService : ITicketService
         }
     }
 
+    public void SelectSumOfPrice()
+    {
+        using (var connection = new NpgsqlConnection(connectionString))
+        {
+            connection.Open();
+            var cmd = @$"select sum(price) from tickets";
+            var command = new NpgsqlCommand(cmd, connection);
+            System.Console.WriteLine(command.ExecuteNonQuery());
+        }
+    }
 
+    public List<Ticket> GetSumOfSeans()
+    {
+        using (var connection = new NpgsqlConnection(connectionString))
+        {
+            connection.Open();
+            var cmd = @$"select * from tickets
+                        where price > (select avg(price) from tickets)";
+            var command = new NpgsqlCommand(cmd, connection);
+            var reader = command.ExecuteReader();
+            var tickets = new List<Ticket>();
+
+            while (reader.Read())
+            {
+                tickets.Add(new Ticket
+                {
+                Id = reader.GetInt32(0),
+                screening_id = reader.GetInt32(1),
+                customer_name = reader.GetString(2),
+                seat_number = reader.GetString(3),
+                price = reader.GetDecimal(4)
+                });
+            
+            }
+            
+            return tickets;
+        }
+    }
 }

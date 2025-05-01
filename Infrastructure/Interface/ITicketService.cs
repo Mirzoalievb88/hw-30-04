@@ -9,4 +9,6 @@ public interface ITicketService
     void CreateTicket(Ticket ticket);
     void UpdateTicket(Ticket ticket);
     void DeleteTicket(int id);
+    void SelectSumOfPrice();
+    List<Ticket> GetSumOfSeans();
 }

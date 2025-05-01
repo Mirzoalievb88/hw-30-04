@@ -67,53 +67,113 @@ public class MovieService : IMovieService
         }
     }
 
-    public void CreateMovie(Movie movie)
+    // public void CreateMovie(Movie movie)
+    // {
+    //     using (var connection = new NpgsqlConnection(connectionString))
+    //     {
+    //         connection.Open();
+    //         var cmd = $"insert into movies(title, director, year, duration, genre, description) values({movie.title}, {movie.Director}, {movie.year}, {movie.duration}, {movie.genre}, {movie.description})";
+    //         var command = new NpgsqlCommand(cmd, connection);
+    //         var result = command.ExecuteNonQuery();
+    //         System.Console.WriteLine(result);
+    //     }
+    // }
+
+    // public void UpdateMovie(Movie movie)
+    // {
+    //     using (var connection = new NpgsqlConnection(connectionString))
+    //     {
+    //         connection.Open();
+    //         var cmd = $"Update movie set title = {movie.title}, director = {movie.Director}, year = {movie.year}, duration = {movie.duration}, genre = {movie.genre}, description = {movie.description} where id = {movie.Id}";
+    //         var command = new NpgsqlCommand(cmd, connection);
+    //         command.ExecuteNonQuery();
+    //     }
+    // }
+
+    // public void DeleteMovie(int id)
+    // {
+    //     using (var connection = new NpgsqlConnection(connectionString))
+    //     {
+    //         connection.Open();
+    //         var cmd = $"delete from movies where id = {id}";
+    //         var command = new NpgsqlCommand(cmd, connection);
+    //         command.ExecuteNonQuery();
+    //     }
+    // }
+
+    // public List<Movie> GetMoviesByGenre(string genre)
+    // {
+    //     using (var connection = new NpgsqlConnection(connectionString))
+    //     {
+    //         connection.Open();
+    //         var cmd = $"select * from movies where genre = {genre}";
+    //         var command = new NpgsqlCommand(cmd, connection);
+    //         var reader = command.ExecuteReader();
+    //         var movies = new List<Movie>();
+
+    //         while (reader.Read())
+    //         {
+    //             movies.Add(new Movie 
+    //             {
+    //                 Id = reader.GetInt32(0),
+    //                 title = reader.GetString(1),
+    //                 Director = reader.GetString(2),
+    //                 year = reader.GetInt32(3),
+    //                 duration = reader.GetInt32(4),
+    //                 genre = reader.GetString(5),
+    //                 description = reader.GetString(6)
+    //             });
+    //         }
+    //         return movies;
+    //     }
+    // }
+
+    // public List<string> GetUniqueDirectors()
+    // {
+    //     using (var connection = new NpgsqlConnection(connectionString))
+    //     {
+    //         connection.Open();
+    //         var cmd = $"select distinct director from movies";
+    //         var command = new NpgsqlCommand(cmd, connection);
+    //         var reader = command.ExecuteReader();
+    //         var directors = new List<string>();
+
+    //         while (reader.Read())
+    //         {
+    //             directors.Add(reader.GetString(0));
+    //         }
+
+    //         return directors;
+    //     }
+    // }
+
+    public void GetMovieByDuration()
     {
         using (var connection = new NpgsqlConnection(connectionString))
         {
             connection.Open();
-            var cmd = $"insert into movies(title, director, year, duration, genre, description) values({movie.title}, {movie.Director}, {movie.year}, {movie.duration}, {movie.genre}, {movie.description})";
+            var cmd = $"select * from movies where duration = (select max(duration) from movies)";
             var command = new NpgsqlCommand(cmd, connection);
-            var result = command.ExecuteNonQuery();
-            System.Console.WriteLine(result);
+            System.Console.WriteLine(command.ExecuteNonQuery());
         }
     }
 
-    public void UpdateMovie(Movie movie)
+    public List<Movie> GetMoviesDistinct()
     {
         using (var connection = new NpgsqlConnection(connectionString))
         {
             connection.Open();
-            var cmd = $"Update movie set title = {movie.title}, director = {movie.Director}, year = {movie.year}, duration = {movie.duration}, genre = {movie.genre}, description = {movie.description} where id = {movie.Id}";
-            var command = new NpgsqlCommand(cmd, connection);
-            command.ExecuteNonQuery();
-        }
-    }
-
-    public void DeleteMovie(int id)
-    {
-        using (var connection = new NpgsqlConnection(connectionString))
-        {
-            connection.Open();
-            var cmd = $"delete from movies where id = {id}";
-            var command = new NpgsqlCommand(cmd, connection);
-            command.ExecuteNonQuery();
-        }
-    }
-
-    public List<Movie> GetMoviesByGenre(string genre)
-    {
-        using (var connection = new NpgsqlConnection(connectionString))
-        {
-            connection.Open();
-            var cmd = $"select * from movies where genre = {genre}";
+            var cmd = @$"SELECT Id
+                        FROM movies
+                        GROUP BY Id
+                        HAVING COUNT(DISTINCT Id) > 1;";
             var command = new NpgsqlCommand(cmd, connection);
             var reader = command.ExecuteReader();
             var movies = new List<Movie>();
 
             while (reader.Read())
             {
-                movies.Add(new Movie 
+                movies.Add(new Movie
                 {
                     Id = reader.GetInt32(0),
                     title = reader.GetString(1),
@@ -128,22 +188,58 @@ public class MovieService : IMovieService
         }
     }
 
-    public List<string> GetUniqueDirectors()
+    public List<Movie> GetAllMoviesOfCommedy(string genre)
     {
         using (var connection = new NpgsqlConnection(connectionString))
         {
             connection.Open();
-            var cmd = $"select distinct director from movies";
+            var cmd = @$"select * from movies where genre = {genre}";
             var command = new NpgsqlCommand(cmd, connection);
             var reader = command.ExecuteReader();
-            var directors = new List<string>();
+            var movies = new List<Movie>();
 
             while (reader.Read())
             {
-                directors.Add(reader.GetString(0));
+                movies.Add(new Movie
+                {
+                    Id = reader.GetInt32(0),
+                    title = reader.GetString(1),
+                    Director = reader.GetString(2),
+                    year = reader.GetInt32(3),
+                    duration = reader.GetInt32(4),
+                    genre = reader.GetString(5),
+                    description = reader.GetString(6)                   
+                });
             }
-
-            return directors;
+            return movies;
         }
+    }
+
+    public List<Movie> GetDirectors()
+    {
+        using (var connection = new NpgsqlConnection(connectionString))
+        {
+            connection.Open();
+            var cmd = @$"select distinct Direcory from movies";
+            var command = new NpgsqlCommand(cmd, connection);
+            var reader = command.ExecuteReader();
+            var movies = new List<Movie>();
+
+            while (reader.Read())
+            {    
+                movies.Add(new Movie
+                {
+                    Id = reader.GetInt32(0),
+                    title = reader.GetString(1),
+                    Director = reader.GetString(2),
+                    year = reader.GetInt32(3),
+                    duration = reader.GetInt32(4),
+                    genre = reader.GetString(5),
+                    description = reader.GetString(6)                   
+                });
+            }
+            return movies;
+        }
+
     }
 }

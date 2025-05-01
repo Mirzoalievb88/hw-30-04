@@ -9,4 +9,5 @@ public interface ITheaterService
     void CreateTheater(Theater theater);
     void UpdateTheater(Theater theater);
     void DeleteTheater(int id);
+    List<Theater> GetCountSeans();
 }
